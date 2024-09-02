@@ -6,6 +6,10 @@ custom:
   local-storage: "/Users/bhupendrasam1404/Project/Microservices/storage"
 
 spring:
+  servlet:
+      multipart:
+          max-file-size: 50MB
+          max-request-size: 50MB
   config:
     import: "optional:configserver:http://${custom.server-ip}:9005"
   application:

@@ -4,7 +4,7 @@
  * Time   :5:01 pm
  * Project:microservices-registry
  **/
-package com.service.users.config;
+package com.service.users.security;
 
 import com.service.users.repository.UsersRepository;
 import com.service.users.dto.CustomUserDetails;
