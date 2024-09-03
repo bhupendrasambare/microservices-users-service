@@ -29,4 +29,10 @@ public class AddressController {
     public ResponseEntity<Response> createAddress(@Valid @RequestBody AddressRequest addressRequest) {
         return addressService.createAddress(addressRequest);
     }
+
+    @Operation(summary = "Get Users address", description = "Get address of user based on login token")
+    @GetMapping
+    public ResponseEntity<Response> getAddress() {
+        return addressService.getAddress();
+    }
 }

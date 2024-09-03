@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class AddressService {
@@ -40,7 +41,7 @@ public class AddressService {
         Utility utility = new Utility();
         if(utility.getCurrentUsername() !=null ){
             Users users = usersRepository.findByEmail(utility.getCurrentUsername()).orElse(null);
-            if(users!=null && users.getId() != addressRequest.userId() ){
+            if(users!=null ){
 
                 if (addressRequest.cityId() != null) {
                     City city = cityRepository.findById(addressRequest.cityId())
@@ -59,12 +60,33 @@ public class AddressService {
 
                 address.setLandmark(addressRequest.landmark());
                 address.setStreet(addressRequest.street());
-                address.setUserId(addressRequest.userId());
+                address.setUserId(users.getId());
                 address.setCreatedAt(LocalDateTime.now());
                 address.setUpdatedAt(LocalDateTime.now());
 
                 address = addressRepository.save(address);
                 return ResponseEntity.status(201).body(new Response(Constants.ADDRESS_CREATED_SUCCESSFULLY, address));
+            }else{
+                return new ResponseEntity<>
+                        (new Response(Status.FAILED,
+                                Constants.UNAUTHORIZED_REQUEST_CODE,
+                                Constants.UNAUTHORIZED_REQUEST), HttpStatus.UNAUTHORIZED);
+            }
+        }else{
+            return new ResponseEntity<>
+                    (new Response(Status.FAILED,
+                            Constants.UNAUTHORIZED_REQUEST_CODE,
+                            Constants.UNAUTHORIZED_REQUEST), HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    public ResponseEntity<Response> getAddress() {
+        Utility utility = new Utility();
+        if(utility.getCurrentUsername() !=null ){
+            Users users = usersRepository.findByEmail(utility.getCurrentUsername()).orElse(null);
+            if(users!=null){
+                List<Address> addresses = addressRepository.findByUserId(users.getId());
+                return ResponseEntity.status(200).body(new Response(Constants.USER_ADDRESS_RETRIVED_SUCCESSFULLY, addresses));
             }else{
                 return new ResponseEntity<>
                         (new Response(Status.FAILED,
