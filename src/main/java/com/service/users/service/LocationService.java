@@ -7,6 +7,7 @@
 package com.service.users.service;
 
 import com.service.users.config.Constants;
+import com.service.users.dto.Status;
 import com.service.users.dto.response.Response;
 import com.service.users.dto.response.recordResponse.CityResponse;
 import com.service.users.dto.response.recordResponse.StateResponse;
@@ -46,17 +47,25 @@ public class LocationService {
 
     public ResponseEntity<Response> updateCountry(Long id, Country country) {
         Country existingCountry = countryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Country not found with id: " + id));
-        existingCountry.setName(country.getName());
-        existingCountry.setUpdatedAt(LocalDateTime.now());
-        Country updatedCountry = countryRepository.save(existingCountry);
-        return ResponseEntity.ok(new Response(Constants.COUNTRY_UPDATED_SUCCESSFULLY, updatedCountry));
+                .orElse(null);
+        if(existingCountry!=null){
+            existingCountry.setName(country.getName());
+            existingCountry.setUpdatedAt(LocalDateTime.now());
+            Country updatedCountry = countryRepository.save(existingCountry);
+            return ResponseEntity.ok(new Response(Constants.COUNTRY_UPDATED_SUCCESSFULLY, updatedCountry));
+        }else{
+            return ResponseEntity.ok(new Response(Status.FAILED,Constants.COUNTRY_NOT_FOUND_CODE,Constants.COUNTRY_NOT_FOUND));
+        }
     }
 
     public ResponseEntity<Response> getCountry(Long id) {
         Country country = countryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Country not found with id: " + id));
-        return ResponseEntity.ok(new Response(Constants.COUNTRY_RETRIEVED_SUCCESSFULLY, country));
+                .orElse(null);
+        if(country!=null){
+            return ResponseEntity.ok(new Response(Constants.COUNTRY_RETRIEVED_SUCCESSFULLY, country));
+        }else{
+            return ResponseEntity.ok(new Response(Status.FAILED,Constants.COUNTRY_NOT_FOUND_CODE,Constants.COUNTRY_NOT_FOUND));
+        }
     }
 
     public ResponseEntity<Response> getAllCountries() {
@@ -65,34 +74,64 @@ public class LocationService {
     }
 
     // State CRUD operations
-    public ResponseEntity<Response> createState(State state) {
-        state.setCreatedAt(LocalDateTime.now());
-        state.setUpdatedAt(LocalDateTime.now());
-        State savedState = stateRepository.save(state);
-        StateResponse stateResponse = mapToStateResponse(savedState);
-        return ResponseEntity.ok(new Response(Constants.STATE_CREATED_SUCCESSFULLY, stateResponse));
+    public ResponseEntity<Response> createState(StateResponse request) {
+        Country country = countryRepository.findById(request.countryId()).orElse(null);
+        if(country!=null){
+            State state = new State();
+            state.setName(request.name());
+            state.setCountry(country);
+            state.setCreatedAt(LocalDateTime.now());
+            state.setUpdatedAt(LocalDateTime.now());
+            State savedState = stateRepository.save(state);
+            StateResponse stateResponse = mapToStateResponse(savedState);
+            return ResponseEntity.ok(new Response(Constants.STATE_CREATED_SUCCESSFULLY, stateResponse));
+        }else {
+            return ResponseEntity.ok(new Response(Status.FAILED,Constants.COUNTRY_NOT_FOUND_CODE,Constants.COUNTRY_NOT_FOUND));
+        }
     }
 
-    public ResponseEntity<Response> updateState(Long id, State state) {
+    public ResponseEntity<Response> updateState(Long id, StateResponse request) {
         State existingState = stateRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("State not found with id: " + id));
-        existingState.setName(state.getName());
-        existingState.setUpdatedAt(LocalDateTime.now());
-        existingState.setCountry(state.getCountry());
-        State updatedState = stateRepository.save(existingState);
-        StateResponse stateResponse = mapToStateResponse(updatedState);
-        return ResponseEntity.ok(new Response(Constants.STATE_UPDATED_SUCCESSFULLY, stateResponse));
+                .orElse(null);
+        if(existingState!=null){
+            existingState.setName(request.name());
+            existingState.setUpdatedAt(LocalDateTime.now());
+            if(request.countryId()!=null && request.countryId()!=0){
+                countryRepository.findById(request.countryId()).ifPresent(existingState::setCountry);
+            }
+            State updatedState = stateRepository.save(existingState);
+            StateResponse stateResponse = mapToStateResponse(updatedState);
+            return ResponseEntity.ok(new Response(Constants.STATE_UPDATED_SUCCESSFULLY, stateResponse));
+        }else {
+            return ResponseEntity.ok(new Response(Status.FAILED,Constants.STATE_NOT_FOUND_CODE,Constants.STATE_NOT_FOUND));
+        }
     }
 
     public ResponseEntity<Response> getState(Long id) {
-        State state = stateRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("State not found with id: " + id));
-        StateResponse stateResponse = mapToStateResponse(state);
-        return ResponseEntity.ok(new Response(Constants.STATE_RETRIEVED_SUCCESSFULLY, stateResponse));
+        State existingState = stateRepository.findById(id)
+                .orElse(null);
+        if(existingState!=null){
+            return ResponseEntity.ok(new Response(Constants.STATE_RETRIEVED_SUCCESSFULLY, existingState));
+        }else {
+            return ResponseEntity.ok(new Response(Status.FAILED,Constants.STATE_NOT_FOUND_CODE,Constants.STATE_NOT_FOUND));
+        }
+    }
+
+    public ResponseEntity<Response> getAllStates(Long countryId) {
+        Country country = countryRepository.findById(countryId).orElse(null);
+        if(country!=null){
+            List<State> states = stateRepository.findAllByCountry(countryId);
+            List<StateResponse> stateResponses = states.stream()
+                    .map(this::mapToStateResponse)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(new Response(Constants.STATES_RETRIEVED_SUCCESSFULLY, stateResponses));
+        }else{
+            return ResponseEntity.ok(new Response(Status.FAILED,Constants.COUNTRY_NOT_FOUND_CODE,Constants.COUNTRY_NOT_FOUND));
+        }
     }
 
     public ResponseEntity<Response> getAllStates() {
-        List<State> states = stateRepository.findAll();
+        List<State> states = stateRepository.findAllByName();
         List<StateResponse> stateResponses = states.stream()
                 .map(this::mapToStateResponse)
                 .collect(Collectors.toList());
@@ -100,39 +139,71 @@ public class LocationService {
     }
 
     // City CRUD operations
-    public ResponseEntity<Response> createCity(City city) {
-        city.setCreatedAt(LocalDateTime.now());
-        city.setUpdatedAt(LocalDateTime.now());
-        City savedCity = cityRepository.save(city);
-        CityResponse cityResponse = mapToCityResponse(savedCity);
-        return ResponseEntity.ok(new Response(Constants.CITY_CREATED_SUCCESSFULLY, cityResponse));
+    public ResponseEntity<Response> createCity(CityResponse request) {
+        State state = stateRepository.findById(request.stateId()).orElse(null);
+        if(state!=null){
+            City city = new City();
+            city.setState(state);
+            city.setName(request.name());
+            city.setPinCode(request.pinCode());
+            city.setCreatedAt(LocalDateTime.now());
+            city.setUpdatedAt(LocalDateTime.now());
+            City savedCity = cityRepository.save(city);
+            CityResponse cityResponse = mapToCityResponse(savedCity);
+            return ResponseEntity.ok(new Response(Constants.CITY_CREATED_SUCCESSFULLY, cityResponse));
+        }else{
+            return ResponseEntity.ok(new Response(Status.FAILED,Constants.STATE_NOT_FOUND_CODE,Constants.STATE_NOT_FOUND));
+        }
     }
 
-    public ResponseEntity<Response> updateCity(Long id, City city) {
+    public ResponseEntity<Response> updateCity(Long id, CityResponse request) {
         City existingCity = cityRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("City not found with id: " + id));
-        existingCity.setName(city.getName());
-        existingCity.setPinCode(city.getPinCode());
-        existingCity.setUpdatedAt(LocalDateTime.now());
-        existingCity.setState(city.getState());
-        City updatedCity = cityRepository.save(existingCity);
-        CityResponse cityResponse = mapToCityResponse(updatedCity);
-        return ResponseEntity.ok(new Response(Constants.CITY_UPDATED_SUCCESSFULLY,  cityResponse));
+                .orElseThrow(null);
+        if(existingCity!=null){
+            existingCity.setName(request.name());
+            existingCity.setPinCode(request.pinCode());
+            existingCity.setUpdatedAt(LocalDateTime.now());
+            if(request.stateId()!=null && request.stateId()!=0){
+                stateRepository.findById(request.stateId()).ifPresent(existingCity::setState);
+            }
+            City updatedCity = cityRepository.save(existingCity);
+            CityResponse cityResponse = mapToCityResponse(updatedCity);
+            return ResponseEntity.ok(new Response(Constants.CITY_UPDATED_SUCCESSFULLY,  cityResponse));
+        }else{
+            return ResponseEntity.ok(new Response(Status.FAILED,Constants.CITY_NOT_FOUND_CODE,Constants.CITY_NOT_FOUND));
+        }
     }
 
     public ResponseEntity<Response> getCity(Long id) {
         City city = cityRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("City not found with id: " + id));
-        CityResponse cityResponse = mapToCityResponse(city);
-        return ResponseEntity.ok(new Response(Constants.CITY_RETRIEVED_SUCCESSFULLY,  cityResponse));
+                .orElse(null);
+        if(city!=null){
+            CityResponse cityResponse = mapToCityResponse(city);
+            return ResponseEntity.ok(new Response(Constants.CITY_RETRIEVED_SUCCESSFULLY,  cityResponse));
+        }else {
+            return ResponseEntity.ok(new Response(Status.FAILED,Constants.CITY_NOT_FOUND_CODE,Constants.CITY_NOT_FOUND));
+        }
     }
 
     public ResponseEntity<Response> getAllCities() {
-        List<City> cities = cityRepository.findAll();
+        List<City> cities = cityRepository.findAllByName();
         List<CityResponse> cityResponses = cities.stream()
                 .map(this::mapToCityResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new Response(Constants.CITIES_RETRIEVED_SUCCESSFULLY, cityResponses));
+    }
+
+    public ResponseEntity<Response> getAllCities(Long id) {
+        State state = stateRepository.findById(id).orElse(null);
+        if(state!=null){
+            List<City> cities = cityRepository.findByStateId(id);
+            List<CityResponse> cityResponses = cities.stream()
+                    .map(this::mapToCityResponse)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(new Response(Constants.CITIES_RETRIEVED_SUCCESSFULLY, cityResponses));
+        }else {
+            return ResponseEntity.ok(new Response(Status.FAILED,Constants.STATE_NOT_FOUND_CODE,Constants.STATE_NOT_FOUND));
+        }
     }
 
     // Utility methods to map entities to DTOs

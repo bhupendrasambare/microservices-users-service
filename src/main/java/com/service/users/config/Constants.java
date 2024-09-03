@@ -14,6 +14,9 @@ public class Constants {
     public static final String INVALID_PASSWORD_CODE="20002";
     public static final String INVALID_TOKEN_CODE = "20003";
     public static final String INTERNAL_SERVER_ERROR_CODE = "10001";
+    public static final String COUNTRY_NOT_FOUND_CODE = "20004";
+    public static final String STATE_NOT_FOUND_CODE = "20005";
+    public static final String CITY_NOT_FOUND_CODE = "20006";
 
     public static final String SUCCESS="SUCCESS";
     public static final String USER_NOT_FOUND = "User not found";
@@ -33,4 +36,10 @@ public class Constants {
     public static final String COUNTRIES_RETRIEVED_SUCCESSFULLY = "Countries retrieved successfully.";
     public static final String COUNTRY_UPDATED_SUCCESSFULLY = "Country updated successfully.";
     public static final String COUNTRY_CREATED_SUCCESSFULLY = "Country created successfully.";
+    public static final String PROFILE_UPDATED_SUCCESSFULLY = "Profile updated successfully";
+    public static final String PROFILE_FOUND_SUCCESSFULLY = "Profile found successfully";
+    public static final String COUNTRY_NOT_FOUND = "Country not found";
+    public static final String STATE_NOT_FOUND = "State not found";
+    public static final String CITY_NOT_FOUND = "City not found";
+    public static final String USER_ADDRESS_RETRIVED_SUCCESSFULLY = "User address retrived successfully";
 }

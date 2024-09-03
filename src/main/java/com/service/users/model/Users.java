@@ -7,6 +7,7 @@
 package com.service.users.model;
 
 
+import com.service.users.dto.request.UserUpdateRequest;
 import com.service.users.dto.response.UserDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -39,6 +40,9 @@ public class Users {
     @Column(name = "phone_number", unique = true)
     private String phoneNumber;
 
+    @Column(name = "profile_picture", unique = true)
+    private String profilePicture;
+
     @Column(nullable = false, updatable = false,name = "created_at")
     private LocalDateTime createdAt;
 
@@ -66,5 +70,24 @@ public class Users {
         this.lastName = request.getLastName();
         this.email = request.getEmail();
         this.password= request.getPassword();
+    }
+
+    public void updateFields(UserUpdateRequest request) {
+        if (request.getFirstName() != null && !request.getFirstName().isEmpty()) {
+            this.firstName = request.getFirstName();
+        }
+        if (request.getLastName() != null && !request.getLastName().isEmpty()) {
+            this.lastName = request.getLastName();
+        }
+        if (request.getPhoneNumber() != null && !request.getPhoneNumber().isEmpty()) {
+            this.phoneNumber = request.getPhoneNumber();
+        }
+        if (request.getProfilePictureUrl() != null && !request.getProfilePictureUrl().isEmpty()) {
+            this.profilePicture = request.getProfilePictureUrl();
+        }
+        if(this.createdAt==null){
+            this.createdAt = LocalDateTime.now();
+        }
+        this.updatedAt = LocalDateTime.now();
     }
 }

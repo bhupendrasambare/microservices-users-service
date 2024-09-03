@@ -50,6 +50,12 @@ public class PublicController {
         return locationService.getAllStates();
     }
 
+    @Operation(summary = "Get all states", description = "Retrieves all states by country Id.")
+    @GetMapping("/states/country/{countryId}")
+    public ResponseEntity<Response> getAllStates(@PathVariable("countryId") Long countryId) {
+        return locationService.getAllStates(countryId);
+    }
+
     @Operation(summary = "Get a city by ID", description = "Retrieves a city by its ID.")
     @GetMapping("/cities/{id}")
     public ResponseEntity<Response> getCity(@PathVariable Long id) {
@@ -60,5 +66,11 @@ public class PublicController {
     @GetMapping("/cities")
     public ResponseEntity<Response> getAllCities() {
         return locationService.getAllCities();
+    }
+
+    @Operation(summary = "Get all cities", description = "Retrieves all cities by State id.")
+    @GetMapping("/cities/state/{stateId}")
+    public ResponseEntity<Response> getAllCities(@PathVariable(name = "stateId") Long stateId) {
+        return locationService.getAllCities(stateId);
     }
 }
