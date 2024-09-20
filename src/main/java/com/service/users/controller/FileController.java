@@ -37,9 +37,6 @@ public class FileController {
     @Value("${custom.local-storage}")
     private String LOCAL_STORAGE;
 
-    @Value("${server.port}")
-    private String SERVER_PORT;
-
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@ModelAttribute  MultipartFile file) {
         if (file.isEmpty()) {
@@ -69,7 +66,7 @@ public class FileController {
             // Write the file to the target location
             Files.write(filePath, file.getBytes());
 
-            return ResponseEntity.ok(SERVER_IP+":"+SERVER_PORT+"/users/files/retrieve/"+newFileName);
+            return ResponseEntity.ok("/users/files/retrieve/"+newFileName);
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not upload the file: " + e.getMessage());

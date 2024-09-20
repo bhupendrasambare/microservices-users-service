@@ -20,4 +20,14 @@ public class UserUpdateRequest {
     private String phoneNumber;
     private MultipartFile profilePicture;
     private String profilePictureUrl;
+
+    private String title;
+    private String about;
+    private String address;
+    private String company;
+
+    private String youtube;
+    private String twitter;
+    private String facebook;
+    private String linkedin;
 }

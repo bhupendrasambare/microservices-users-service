@@ -8,7 +8,6 @@ package com.service.users.model;
 
 
 import com.service.users.dto.request.UserUpdateRequest;
-import com.service.users.dto.response.UserDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -43,34 +42,26 @@ public class Users {
     @Column(name = "profile_picture", unique = true)
     private String profilePicture;
 
-    @Column(nullable = false, updatable = false,name = "created_at")
-    private LocalDateTime createdAt;
+    private String title;
 
-    @Column(nullable = false,name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Lob
+    private String about;
+    private String address;
+    private String company;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    private String youtube;
+    private String twitter;
+    private String facebook;
+    private String linkedin;
 
     @ManyToOne
     @JoinColumn(name = "roles_id")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Roles roles;
 
-    public Users(UserDto request) {
-        this.firstName = request.getFirstName();
-        this.lastName = request.getLastName();
-        this.email = request.getEmail();
-        this.password= request.getPassword();
-    }
+    @ManyToOne
+    @JoinColumn(name = "city_id")
+    private City city;
 
     public void updateFields(UserUpdateRequest request) {
         if (request.getFirstName() != null && !request.getFirstName().isEmpty()) {
@@ -85,9 +76,53 @@ public class Users {
         if (request.getProfilePictureUrl() != null && !request.getProfilePictureUrl().isEmpty()) {
             this.profilePicture = request.getProfilePictureUrl();
         }
+        if (request.getTitle() != null && !request.getTitle().isEmpty()) {
+            this.title = request.getTitle();
+        }
+        if (request.getAbout() != null && !request.getAbout().isEmpty()) {
+            this.about = request.getAbout();
+        }
+        if (request.getAddress() != null && !request.getAddress().isEmpty()) {
+            this.address = request.getAddress();
+        }
+        if (request.getCompany() != null && !request.getCompany().isEmpty()) {
+            this.company = request.getCompany();
+        }
+        if (request.getYoutube() != null && !request.getYoutube().isEmpty()) {
+            this.youtube = request.getYoutube();
+        }
+        if (request.getTwitter() != null && !request.getTwitter().isEmpty()) {
+            this.twitter = request.getTwitter();
+        }
+        if (request.getFacebook() != null && !request.getFacebook().isEmpty()) {
+            this.facebook = request.getFacebook();
+        }
+        if (request.getLinkedin() != null && !request.getLinkedin().isEmpty()) {
+            this.linkedin = request.getLinkedin();
+        }
+
         if(this.createdAt==null){
             this.createdAt = LocalDateTime.now();
         }
+        this.updatedAt = LocalDateTime.now();
+    }
+
+
+
+    @Column(nullable = false, updatable = false,name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false,name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 }
