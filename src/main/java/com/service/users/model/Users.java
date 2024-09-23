@@ -56,7 +56,6 @@ public class Users {
 
     @ManyToOne
     @JoinColumn(name = "roles_id")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Roles roles;
 
     @ManyToOne
