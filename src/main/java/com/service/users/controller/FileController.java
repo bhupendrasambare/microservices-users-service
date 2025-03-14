@@ -66,7 +66,7 @@ public class FileController {
             // Write the file to the target location
             Files.write(filePath, file.getBytes());
 
-            return ResponseEntity.ok("/users/files/retrieve/"+newFileName);
+            return ResponseEntity.ok(SERVER_IP+":"+"9000/users/files/retrieve/"+newFileName);
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not upload the file: " + e.getMessage());
